@@ -12,7 +12,10 @@ private:
     string account_number = "";
 
 protected:
-    int accounttype;
+    void setBalance(double b)
+    {
+        balance = b;
+    }
 
 public:
     string generate_account_number()
@@ -71,72 +74,56 @@ public:
     }
     void deposit(double d)
     {
-        balance = balance + d;
+        if (d > 0)
+            balance = balance + d;
     }
-    void makeTransaction(double t)
+    virtual void withdraw(double t)
     {
-        try
-        {
-            if (t < balance && accounttype == 1) // Checking Account
-            {
-                balance = balance - t;
-            }
-            else if (accounttype == 2) // Savings Account
-            {
-                balance = balance - t;
-                
-            }
-            else if (accounttype == 3) // Business Account
-            {
-                balance = balance - t;
-                
-            }
-            else if (accounttype == 0)
-            {
-                throw 1;
-            }
-            else
-            {
-                throw 3;
-            }
-            if (balance < 0){ // OverDraft Error For Saving And Business Account Types 
-                throw 2;
-            }
-        }
-        catch (int e)
-        {
-            if (e == 1)
-                cout << "Please Set Account Type Before Making Transaction" << endl;
-            if (e == 2)
-                cout << "You Have an Over Draft" << endl;
-            if (e == 3)
-                cout << "Insufficient Funds" << endl;
-        }
+        cout << "Account Type: Base Account Can't Make Withdraws.";
     }
-    int getAccountType()
+    virtual string getAccountType()
     {
-        return accounttype;
+        return "Base Account";
     }
 };
 
 class Checking : public Account
 {
 public:
-    Checking()
+    void withdraw(double t) override
     {
-        accounttype = 1;
+        setBalance(getBalance() - t);
+        if (getBalance() < 0)
+        {
+            cout << "Warning: Checking account is overdrawn." << endl;
+        }
+    }
+    string getAccountType() override
+    {
+        return "Checking Account";
     }
 };
 
 class Savings : public Account
 {
-    private:
-    double goal;
+private:
+    double goal = 0;
 
 public:
-    Savings()
+    void withdraw(double t) override
     {
-        accounttype = 2;
+        if (getBalance() - t < 0)
+        {
+            cout << "Warning: Savings account Cannot Be Overdrawn." << endl;
+        }
+        else
+        {
+            setBalance(getBalance() - t);
+        }
+    }
+    string getAccountType() override
+    {
+        return "Savings Account";
     }
     void setGoal(double g)
     {
@@ -148,27 +135,40 @@ public:
     }
     string goalProgress()
     {
-        if(goal > getBalance()){
+        if (goal > getBalance())
+        {
             return "You have not reached your goal yet";
-
-        }else{
+        }
+        else
+        {
             return "You have reached your goal";
         }
     }
-    
 };
 
 class Business : public Account
 {
-    private:
+private:
     string business_tax_id;
     string business_name;
 
 public:
-    Business()
+    void withdraw(double t) override
     {
-        accounttype = 3;
+        if (getBalance() - t < 0)
+        {
+            cout << "Warning: Business account Cannot Be Overdrawn." << endl;
+        }
+        else
+        {
+            setBalance(getBalance() - t);
+        }
     }
+    string getAccountType() override
+    {
+        return "Business Account";
+    }
+
     void setBusinessName(string n)
     {
         business_name = n;
@@ -185,7 +185,6 @@ public:
     {
         return business_tax_id;
     }
-    
 };
 
 int main()
@@ -194,13 +193,13 @@ int main()
     a.setName("Hunter Thomas");
     a.deposit(1000);
     a.setId("jgjdhdj12mkcvk");
-    a.makeTransaction(100);
+    a.withdraw(10000);
     cout << "Balance: $" << a.getBalance() << endl;
     cout << "Account Number: " << a.getAccountNumber() << endl;
     cout << "Name: " << a.getName() << endl;
     cout << "ID: " << a.getId() << endl;
     cout << "Account Type: " << a.getAccountType() << endl;
-    cout <<  "\n";
+    cout << "\n";
 
     Business b;
     b.setName("Hunter Thomas");
@@ -208,7 +207,7 @@ int main()
     b.setId("jgjdhdj12mkcvk");
     b.setBusinessTaxId("jgjdhdj12mkcvk");
     b.setBusinessName("H&T Development");
-    b.makeTransaction(100);
+    b.withdraw(100);
     cout << "Balance: $" << b.getBalance() << endl;
     cout << "Account Number: " << b.getAccountNumber() << endl;
     cout << "Name: " << b.getName() << endl;
@@ -216,25 +215,20 @@ int main()
     cout << "Account Type: " << b.getAccountType() << endl;
     cout << "Business Name: " << b.getBusinessName() << endl;
     cout << "Business Tax ID: " << b.getBusinessTaxId() << endl;
-    cout <<  "\n";
-
+    cout << "\n";
 
     Savings c;
     c.setName("Hunter Thomas");
     c.setGoal(100000);
     c.deposit(1000);
     c.setId("jgjdhdj12mkcvk");
-    c.makeTransaction(100);
+    c.withdraw(100);
     cout << "Balance: $" << c.getBalance() << endl;
     cout << "Account Number: " << c.getAccountNumber() << endl;
     cout << "Name: " << c.getName() << endl;
     cout << "ID: " << c.getId() << endl;
     cout << "Account Type: " << c.getAccountType() << endl;
-    cout << c.goalProgress() << " for your savings account."<<endl;
-    
-
-
-
+    cout << c.goalProgress() << " for your savings account." << endl;
 
     return 0;
 }
